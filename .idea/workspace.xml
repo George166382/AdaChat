@@ -67,8 +67,20 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/Play-Youtube-Video" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "George166382"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/George166382/AdaChat.git",
+    "accountId": "4d5d034c-1b20-49de-9f1f-c99657847dc9"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -83,7 +95,7 @@
     "Gradle.Portofoliu_Proiecte [build].executor": "Run",
     "Gradle.Portofoliu_Proiecte [clean].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/projs/Portofoliu_Proiecte/app/src/main/java/com/example/andopsi",
     "project.structure.last.edited": "SDK Location",
@@ -296,11 +308,20 @@
       <workItem from="1762853990634" duration="147000" />
       <workItem from="1762951567140" duration="2966000" />
       <workItem from="1763020733590" duration="1777000" />
+      <workItem from="1763992357352" duration="1277000" />
     </task>
     <servers />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
   </component>
 </project>
