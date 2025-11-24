@@ -1,0 +1,14 @@
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\network\YoutubeApiService.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\home\YoutubePlayer.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\components\ChatbotSelection.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\home\HomeScreen.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\VideoApplication.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\components\UrlInputField.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\theme\Theme.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\theme\Type.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\theme\Color.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\data\AppContainer.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\MainActivity.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\ui\home\HomeViewModel.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\data\VideoRepository.kt
+D:\projs\Portofoliu_Proiecte\app\src\main\java\com\example\andopsi\model\Video.kt
