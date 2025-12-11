@@ -19,11 +19,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 // Data class to hold information about each chatbot
 data class Chatbot(val name: String, val logoUrl: String)
 
-/*
 @Composable
 fun ChatbotSelection() {
     // List of chatbots to display
@@ -93,4 +93,4 @@ fun ChatbotIcon(
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
-}*/
+}

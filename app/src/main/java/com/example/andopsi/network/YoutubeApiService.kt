@@ -1,6 +1,6 @@
 package com.example.andopsi.network
 
-import com.example.andopsi.model.YouTubeVideosResponse
+import com.example.andopsi.model.Video
 import retrofit2.Response
 
 import retrofit2.http.GET
@@ -12,6 +12,6 @@ interface YouTubeApiService {
         @Query("part") part: String = "snippet,contentDetails,statistics",
         @Query("id") videoId: String,
         @Query("key") apiKey: String
-    ): Response<YouTubeVideosResponse>
+    ): Response<Video>
 }
 

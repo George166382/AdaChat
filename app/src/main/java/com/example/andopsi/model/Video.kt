@@ -2,9 +2,10 @@ package com.example.andopsi.model
 
 import android.provider.MediaStore
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 @Serializable
-data class YouTubeVideosResponse(val items: List<VideoItem>)
+data class Video(val items: List<VideoItem>)
 
 @Serializable
 data class VideoItem(
@@ -25,21 +26,19 @@ data class Thumbnails(val high: Thumbnail)
 @Serializable
 data class Thumbnail(val url: String)
 
-// your clean domain model
+
 @Serializable
-data class Video(
-    val id: String,
-    val title: String,
-    val description: String,
-    val publishedAt: String,
-    val thumbnailUrl: String
+data class TranscriptResponse(
+    @SerialName("video_id") val videoId: String,
+    @SerialName("full_text") val fullText: String,
+    @SerialName("segments") val segments: List<TranscriptSegment>?
 )
 
-// mapper
-fun VideoItem.toVideo(): Video = Video(
-    id = id,
-    title = snippet.title,
-    description = snippet.description,
-    publishedAt = snippet.publishedAt,
-    thumbnailUrl = snippet.thumbnails.high.url
+@Serializable
+data class TranscriptSegment(
+    val text: String,
+    val start: Double,
+    val duration: Double
 )
+
+

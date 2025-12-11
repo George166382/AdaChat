@@ -9,6 +9,6 @@ class VideoApplication : Application() {
     lateinit var container: AppContainer
     override fun onCreate() {
         super.onCreate()
-        container = DefaultAppContainer()
+        container = DefaultAppContainer(applicationContext)
     }
 }
