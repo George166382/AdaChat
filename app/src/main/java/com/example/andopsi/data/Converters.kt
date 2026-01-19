@@ -7,17 +7,20 @@ import kotlinx.datetime.Instant
 
 class Converters {
 
-    // Convert Instant to Long (milliseconds) for Room
-    @TypeConverter
-    fun fromInstant(value: Instant?): Long? {
-        return value?.toEpochMilliseconds()
-    }
+    // --- Instant Converters (Keep only this one pair) ---
 
-    // Convert Long (milliseconds) back to Instant
     @TypeConverter
-    fun toInstant(value: Long?): Instant? {
+    fun fromTimestamp(value: Long?): Instant? {
         return value?.let { Instant.fromEpochMilliseconds(it) }
     }
+
+    @TypeConverter
+    fun dateToTimestamp(date: Instant?): Long? {
+        return date?.toEpochMilliseconds()
+    }
+
+    // --- Enum Converters ---
+
     @TypeConverter
     fun fromRole(role: UserRole): String = role.name
 

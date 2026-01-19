@@ -78,6 +78,8 @@ fun HomeScreen(
 
     // COLLECT CURRENT USER
     val currentUser by homeViewModel.currentUser.collectAsState()
+    val selectedLanguage by homeViewModel.selectedLanguage.collectAsState()
+    val userLanguage by homeViewModel.userLanguage.collectAsState()
 
     // STATE
     var showPortraitMode by remember { mutableStateOf(false) }
@@ -108,11 +110,19 @@ fun HomeScreen(
         when (activeProfileView) {
             ProfileView.LOGIN -> {
                 LoginScreen(
+                    selectedLanguage = selectedLanguage, // Pass the state
+
+                    onLanguageSelected = { newCode ->
+                        // Pass the event to ViewModel
+                        homeViewModel.onLanguageSelected(newCode)
+                    },
+
                     onBackClick = { activeProfileView = ProfileView.MAIN },
+
                     onLoginSubmit = { email, pass ->
                         homeViewModel.login(email, pass) { success, error ->
                             if (success) {
-                                activeProfileView = ProfileView.MAIN // Return to profile, which will now show "Authenticated"
+                                activeProfileView = ProfileView.MAIN
                             } else {
                                 Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
                             }
@@ -141,6 +151,7 @@ fun HomeScreen(
                 if (currentUser != null) {
                     EditProfileScreen(
                         user = currentUser!!,
+                        userLanguage = userLanguage,
                         onBackClick = { activeProfileView = ProfileView.MAIN },
                         onUpdateClick = { newName, newAvatar ->
                             homeViewModel.updateUserProfile(newName, newAvatar) { success, error ->
@@ -151,7 +162,13 @@ fun HomeScreen(
                                     Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
                                 }
                             }
-                        }
+                        },
+                        selectedLanguage = selectedLanguage, // Pass the state
+
+                        onLanguageSelected = { newCode ->
+                            // Pass the event to ViewModel
+                            homeViewModel.onLanguageSelected(newCode)
+                        },
                     )
                 } else {
                     // If somehow they got here without being logged in, reset
@@ -162,6 +179,7 @@ fun HomeScreen(
             ProfileView.MAIN -> {
                 ProfileScreen(
                     user = currentUser,
+                    userLanguage = userLanguage,
                     onBackClick = { showProfileScreen = false },
                     onLoginClick = { activeProfileView = ProfileView.LOGIN },
                     onSignUpClick = { activeProfileView = ProfileView.SIGNUP },
@@ -180,6 +198,7 @@ fun HomeScreen(
     }
     else if (currentVideoId != null) {
         AdaChatScreen(
+            userLanguage = userLanguage,
              videoTitle = currentVideoTitle, // Uncomment if your AdaChatScreen uses title
             videoId = currentVideoId!!,
             onBackClick = { currentVideoId = null }
@@ -188,6 +207,7 @@ fun HomeScreen(
     else if (showPortraitMode) {
         HomePortraitScreen(
             user = currentUser,
+            userLanguage = userLanguage,
             onTalkClick = { url ->
                 homeViewModel.fetchVideoDetailsFromUrl(url)
                 // Note: The immediate check of videoState here might be flaky because
@@ -209,6 +229,7 @@ fun HomeScreen(
     }
     else {
         ExistingDebugScreen(
+            userLanguage = userLanguage,
             videoDebugState = videoDebugState,
             onNavigateToPortrait = { showPortraitMode = true },
             onFetchVideo = { url -> homeViewModel.fetchVideoDetailsForDebugScreen(url) }
@@ -219,6 +240,7 @@ fun HomeScreen(
 // --- DEBUG SCREEN (Child - Now Stateless) ---
 @Composable
 fun ExistingDebugScreen(
+    userLanguage: String,
     videoDebugState: Result<Response<Video>>?, // Receive State
     onNavigateToPortrait: () -> Unit,
     onFetchVideo: (String) -> Unit,                  // Send Event
@@ -240,15 +262,29 @@ fun ExistingDebugScreen(
                 .fillMaxWidth(0.9f)
                 .padding(top = 16.dp)
         ) {
-            Text("✨ Enter AdaChat Mode")
+            if (userLanguage == "ro") {
+                Text("✨ Intră în modul AdaChat")
+            } else {
+                Text("✨ Enter AdaChat Mode")
+            }
         }
-
         Spacer(modifier = Modifier.height(24.dp))
 
-        UrlInputField(
-            value = textUrl,
-            onValueChange = { textUrl = it }
-        )
+        if(userLanguage == "ro") {
+            TextField(
+                value = textUrl,
+                onValueChange = { textUrl = it },
+                label = { Text("Introdu URL-ul") }
+            )
+        }
+        else{
+            TextField(
+                value = textUrl,
+                onValueChange = { textUrl = it },
+                label = { Text("Enter URL") }
+            )
+        }
+       
 
         Button(
             onClick = {
@@ -257,7 +293,13 @@ fun ExistingDebugScreen(
                 }
             }
         ) {
-            Text("Fetch Info")
+            if (userLanguage == "ro") {
+                Text("Preia Informațiile")
+            }
+            else{
+                Text("Fetch Info")
+            }
+
         }
 
         // Display video result
@@ -273,25 +315,48 @@ fun ExistingDebugScreen(
                         /*LaunchedEffect(videoItem.id) {
                             onVideoLoaded(videoItem.id)
                         }*/
+                        if (userLanguage == "ro") {
+                            Text(text = "Titlu: ${videoItem.snippet.title}")
+                            Text(text = "Descriere: ${videoItem.snippet.description}", maxLines = 2)
 
-                        Text(text = "Title: ${videoItem.snippet.title}")
-                        Text(text = "Description: ${videoItem.snippet.description}", maxLines = 2)
+                            YoutubeScreen(
+                                videoId = videoItem.id,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+                        } else {
+                            Text(text = "Title: ${videoItem.snippet.title}")
+                            Text(text = "Description: ${videoItem.snippet.description}", maxLines = 2)
 
-                        YoutubeScreen(
-                            videoId = videoItem.id,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                        )
+                            YoutubeScreen(
+                                videoId = videoItem.id,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+                        }
                     } else {
-                        Text(text = "No video details found.")
+                        if (userLanguage == "ro") {
+                            Text(text = "Nu s-au găsit detalii despre videoclip.")
+                        } else {
+                            Text(text = "No video details found.")
+                        }
                     }
                 }
             }.onFailure { exception ->
-                Text(
-                    text = "Error fetching video details: ${exception.message}",
-                    color = MaterialTheme.colorScheme.error
-                )
+                if (userLanguage == "ro") {
+                    Text(
+                        text = "Eroare la preluarea detaliilor videoclipului: ${exception.message}",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else {
+                    Text(
+                        text = "Error fetching video details: ${exception.message}",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+
             }
         }
 
@@ -308,6 +373,7 @@ fun ExistingDebugScreen(
 @Composable
 fun HomePortraitScreen(
     user: com.example.andopsi.model.User?,
+    userLanguage: String,
     onTalkClick: (String) -> Unit,
     onMenuClick: () -> Unit,
     onProfileClick: () -> Unit
@@ -355,7 +421,13 @@ fun HomePortraitScreen(
                 // Menu Items
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                    label = { Text("Main Page") },
+                    label = {
+                        if (userLanguage == "ro") {
+                            Text("Acasă")
+                        } else {
+                            Text("Home")
+                        }
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -388,7 +460,13 @@ fun HomePortraitScreen(
 */
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Settings") },
+                    label = {
+                        if (userLanguage == "ro") {
+                            Text("Setări")
+                        } else {
+                            Text("Settings")
+                        }
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -401,7 +479,13 @@ fun HomePortraitScreen(
 
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
-                    label = { Text("About") },
+                    label = {
+                        if (userLanguage == "ro") {
+                            Text("Despre")
+                        } else {
+                            Text("About")
+                        }
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -412,7 +496,13 @@ fun HomePortraitScreen(
 
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
-                    label = { Text("Help & Feedback") },
+                    label = {
+                        if (userLanguage == "ro") {
+                            Text("Ajutor")
+                        } else {
+                            Text("Help")
+                        }
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -482,12 +572,23 @@ fun HomePortraitScreen(
                 // if user is logged in, greet by name
                 // else generic greeting
                 if (user != null) {
-                    Text(
-                        text = "Hello, ${user.displayName}! What can I help you with?",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
+                    if (userLanguage == "ro") {
+                        Text(
+                            text = "Salut, ${user.displayName}! Cu ce te pot ajuta?",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    } else
+                    {
+                        Text(
+                            text = "Hello, ${user.displayName}! What can I help you with?",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
+
                 }
                 else
                 {
@@ -504,7 +605,13 @@ fun HomePortraitScreen(
                 TextField(
                     value = urlText,
                     onValueChange = { urlText = it },
-                    placeholder = { Text("Enter Video URL") },
+                    placeholder = {
+                        if (userLanguage == "ro") {
+                            Text("Introdu URL-ul videoclipului...", color = Color.Gray)
+                        } else {
+                            Text("Enter  video URL...", color = Color.Gray)
+                        }
+                    },
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -530,10 +637,11 @@ fun HomePortraitScreen(
                         .fillMaxWidth(0.6f)
                         .height(48.dp)
                 ) {
-                    Text(
-                        text = "Talk to Ada",
-                        fontSize = 16.sp
-                    )
+                    if (userLanguage == "ro") {
+                        Text("Vorbește cu Ada")
+                    } else {
+                        Text("Talk to Ada")
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -549,6 +657,7 @@ fun HomePortraitScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdaChatScreen(
+    userLanguage: String,
     videoTitle: String,
     videoId: String,
     onBackClick: () -> Unit
@@ -556,8 +665,16 @@ fun AdaChatScreen(
     var inputText by remember { mutableStateOf("") }
 
     // Mock Chat History
+
     val messages = remember { mutableStateListOf(
-        ChatMessage(text = "This video is presenting correct informations.", isUser = false),
+        ChatMessage(text = if (userLanguage == "ro")
+            {
+                "Acest videoclip prezintă informații corecte."
+            }
+            else
+        {
+            "This video is presenting correct informations."
+        }, isUser = false),
     ) }
 
     Scaffold(
@@ -621,7 +738,13 @@ fun AdaChatScreen(
                 TextField(
                     value = inputText,
                     onValueChange = { inputText = it },
-                    placeholder = { Text("Ask Ada something...", color = Color.Gray) },
+                    placeholder = {
+                        if (userLanguage == "ro") {
+                            Text("Scrie mesajul tău...", color = Color.Gray)
+                        } else {
+                            Text("Type your message...", color = Color.Gray)
+                        }
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp),
@@ -640,7 +763,15 @@ fun AdaChatScreen(
                             messages.add(ChatMessage(text = inputText, isUser = true))
                             inputText = ""
                             // Simulate Ada Reply (For demo)
-                            messages.add(ChatMessage(text = "That's an interesting perspective on the video.", isUser = false))
+                            messages.add(ChatMessage(
+                                text = if (userLanguage == "ro")
+                                {
+                                    "Îmi place foarte mult acest videoclip! Mulțumesc că l-ai împărtășit cu mine."
+                                }
+                                else
+                                {
+                                    "I really like this video! Thanks for sharing it with me."
+                                }, isUser = false))
                         }
                     },
                     modifier = Modifier

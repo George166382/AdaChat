@@ -28,8 +28,8 @@ data class Chatbot(val name: String, val logoUrl: String)
 fun ChatbotSelection() {
     // List of chatbots to display
     val chatbots = listOf(
-        Chatbot("Ask GPT", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/1024px-ChatGPT_logo.svg.png"),
-        Chatbot("Ask Gemini", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Google_Gemini_logo.svg/1200px-Google_Gemini_logo.svg.png")
+        Chatbot("GPT", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/1024px-ChatGPT_logo.svg.png"),
+        Chatbot("Gemini", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Google_Gemini_logo.svg/1200px-Google_Gemini_logo.svg.png")
         // Add more chatbots here if you want
     )
 

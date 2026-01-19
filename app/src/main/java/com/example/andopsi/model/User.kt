@@ -2,6 +2,7 @@ package com.example.andopsi.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -9,13 +10,35 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // Define Enums for stricter control
-enum class UserRole { USER, ADMIN, MODERATOR }
-enum class UserStatus { ACTIVE, BANNED, PENDING }
-
 
 
 @Serializable
-@Entity(tableName = "users")
+enum class UserRole {
+    @SerialName("user")
+    USER,
+
+    @SerialName("admin")
+    ADMIN,
+
+    @SerialName("moderator")
+    MODERATOR
+}
+
+
+@Serializable
+enum class UserStatus {
+    @SerialName("ACTIVE")
+    ACTIVE,
+
+    @SerialName("BANNED")
+    BANNED,
+
+    @SerialName("PENDING")
+    PENDING
+}
+
+@Serializable
+@Entity(tableName = "users", indices = [Index(value = ["user_email"], unique = true), Index(value = ["user_name"], unique = true)])
 data class User(
     @SerialName("user_id")
     @PrimaryKey(autoGenerate = true)

@@ -19,17 +19,30 @@ import com.example.andopsi.model.User
 @Composable
 fun EditProfileScreen(
     user: User, // Pass the current user data to pre-fill fields
+    userLanguage: String,
     onUpdateClick: (String, String?) -> Unit, // name, avatarUrl
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit // <--- 1. ADD THIS CALLBACK
 ) {
     // PRE-FILL STATE with current user data
     var name by remember { mutableStateOf(user.displayName ?: "") }
     var avatarUrl by remember { mutableStateOf(user.avatarUrl ?: "") }
+    val languages = mapOf(
+        "en" to "English",
+        "ro" to "Romanian"
+    )
+
+    var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profile") },
+                title = { if (userLanguage == "ro") {
+                            Text("Editează Profil")
+                        } else {
+                            Text("Edit Profile")
+                        }},
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -59,44 +72,123 @@ fun EditProfileScreen(
                 .verticalScroll(rememberScrollState()).background(Color(0xFFA6E0FF)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Update your personal details.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if(userLanguage == "ro") {
+                Text(
+                    text = "Actualizează-ți detaliile personale.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            else {
+                Text(
+                    text = "Update your personal details.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 1. Display Name Field
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Display Name") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            if(userLanguage == "ro") {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nume de Afișare") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            else
+            {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Display Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // 2. Avatar URL Field
-            OutlinedTextField(
-                value = avatarUrl,
-                onValueChange = { avatarUrl = it },
-                label = { Text("Avatar URL (Optional)") },
-                placeholder = { Text("https://...") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            if (userLanguage == "ro") {
+                OutlinedTextField(
+                    value = avatarUrl,
+                    onValueChange = { avatarUrl = it },
+                    label = { Text("URL Avatar (Opțional)") },
+                    placeholder = { Text("https://...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            else {
+                // 2. Avatar URL Field
+                OutlinedTextField(
+                    value = avatarUrl,
+                    onValueChange = { avatarUrl = it },
+                    label = { Text("Avatar URL (Optional)") },
+                    placeholder = { Text("https://...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // --- Language Selection Dropdown ---
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    // Display the full name (e.g., "English") based on the code (e.g., "en")
+                    value = languages[selectedLanguage] ?: selectedLanguage,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = {
+                        if (userLanguage == "ro") {
+                            Text("Limba Preferată")
+                        } else {
+                            Text("Preferred Language")
+                        }
+                    },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    languages.forEach { (code, name) ->
+                        DropdownMenuItem(
+                            text = { Text(text = name) },
+                            onClick = {
+                                // 2. CALL THE CALLBACK HERE
+                                onLanguageSelected(code)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
             // 3. Big Save Button (Alternative to Top Bar)
             Button(
                 onClick = { onUpdateClick(name, avatarUrl) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = name.isNotBlank()
             ) {
-                Text("Save Changes")
+                if (userLanguage == "ro") {
+                    Text("Salvează Modificările")
+                } else {
+                    Text("Save Changes")
+                }
             }
         }
     }

@@ -25,6 +25,7 @@ import com.example.andopsi.model.User // Ensure you import your User model
 @Composable
 fun ProfileScreen(
     user: User?, // If null -> Not Authenticated. If set -> Authenticated.
+    userLanguage: String,
     onBackClick: () -> Unit,
     onLoginClick: () -> Unit,
     onSignUpClick: () -> Unit,
@@ -35,10 +36,20 @@ fun ProfileScreen(
 
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Profile") },
+                title = { if (userLanguage == "ro") {
+                    Text("Profil")
+                }
+                else
+                {
+                    Text("Profile")
+                } },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        if (userLanguage == "ro") {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Înapoi")
+                        } else {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -64,6 +75,7 @@ fun ProfileScreen(
                 // --- SCENARIO 2: AUTHENTICATED ---
                 AuthenticatedContent(
                     user = user,
+                    userLanguage = userLanguage,
                     onEditClick = onEditProfileClick,
                     onLogoutClick = onLogOutClick
                 )
@@ -81,6 +93,7 @@ fun ProfileScreen(
 @Composable
 fun AuthenticatedContent(
     user: User,
+    userLanguage: String,
     onEditClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
@@ -132,7 +145,11 @@ fun AuthenticatedContent(
         onClick = onEditClick,
         modifier = Modifier.fillMaxWidth(0.8f)
     ) {
-        Text("Edit Profile")
+        if (userLanguage == "ro") {
+            Text("Editează Profil")
+        } else {
+            Text("Edit Profile")
+        }
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -142,7 +159,11 @@ fun AuthenticatedContent(
         modifier = Modifier.fillMaxWidth(0.8f),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
     ) {
-        Text("Log Out")
+        if (userLanguage == "ro") {
+            Text("Deconectare")
+        } else {
+            Text("Log Out")
+        }
     }
 }
 

@@ -6,6 +6,7 @@ import com.example.andopsi.model.UserRole
 import com.example.andopsi.model.UserStatus
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -70,52 +71,99 @@ class UserRepositoryImplementation(private val userDao: UserDao, private val sup
         }
     }
 
+
+
+
+    // Add this helper function to decode hex string to ASCII
+    private fun hexToString(hex: String): String {
+        val result = StringBuilder()
+        var i = 0
+        while (i < hex.length) {
+            val str = hex.substring(i, i + 2)
+            result.append(str.toInt(16).toChar())
+            i += 2
+        }
+        return result.toString()
+    }
+
     override suspend fun login(email: String, pass: String): Result<User> {
-        val user = userDao.getUserByEmail(email)
+        return try {
+            val users = supabase.from("users")
+                .select()
+                .decodeList<User>()
 
-        return if (user != null) {
-            if (user.passwordHash == hashPassword(pass)) {
+            val supabaseUser = users.firstOrNull { it.email == email }
 
-                // 1. Security Check: Is account active?
-                if (user.status != UserStatus.ACTIVE && user.status != UserStatus.PENDING) {
-                    return Result.failure(Exception("Account status is ${user.status}. Access denied."))
+            if (supabaseUser != null) {
+                val inputHash = hashPassword(pass)
+
+                val storedHash = if (supabaseUser.passwordHash.startsWith("\\x")) {
+                    val hexString = supabaseUser.passwordHash.removePrefix("\\x")
+                    hexToString(hexString)
+                } else {
+                    supabaseUser.passwordHash
                 }
 
-                // 2. Update Tracking Fields (Last Login & IP)
-                // Note: "127.0.0.1" is a placeholder. In a real app, you might fetch the actual IP.
-                val updatedUser = user.copy(
-                    lastLoginAt =  Clock.System.now(),
+                if (storedHash == inputHash) {
+                    if (supabaseUser.status != UserStatus.ACTIVE && supabaseUser.status != UserStatus.PENDING) {
+                        return Result.failure(Exception("Account status is ${supabaseUser.status}. Access denied."))
+                    }
 
-                    lastLoginIp = "127.0.0.1",
-                    updatedAt = Clock.System.now() // Update the modification time too
-                )
+                    // IMPORTANT: Check if user exists locally first
+                    val existingLocalUser = userDao.getUserByEmail(email)
 
-                // 3. Persist these updates to the database
-                userDao.updateUser(updatedUser)
+                    val user = if (existingLocalUser != null) {
+                        // Update existing user
+                        existingLocalUser.copy(
+                            lastLoginAt = Clock.System.now(),
+                            lastLoginIp = "127.0.0.1",
+                            updatedAt = Clock.System.now()
+                        ).also { userDao.updateUser(it) }
+                    } else {
+                        // Insert new user with Supabase ID
+                        User(
+                            id = supabaseUser.id ?: 0, // Use Supabase ID
+                            username = supabaseUser.username,
+                            email = supabaseUser.email,
+                            passwordHash = supabaseUser.passwordHash,
+                            displayName = supabaseUser.displayName,
+                            avatarUrl = supabaseUser.avatarUrl,
+                            role = supabaseUser.role,
+                            status = supabaseUser.status,
+                            isVerified = supabaseUser.isVerified,
+                            lastLoginAt = Clock.System.now(),
+                            lastLoginIp = "127.0.0.1",
+                            createdAt = supabaseUser.createdAt,
+                            updatedAt = Clock.System.now()
+                        ).also { userDao.insertUser(it) }
+                    }
 
-                // 4. Update UI State
-                _loggedInUser.value = updatedUser
+                    _loggedInUser.value = user
 
-                // 3. Remote Update (Supabase)
-                try {
-                    // "upsert" = Insert if new, Update if exists (matches by Primary Key 'id')
-                    supabase.from("users").upsert(updatedUser)
-
-                    // If we get here, it worked!
-                    Log.d("Supabase", "Sync successful")
-
-                } catch (e: Exception) {
-                    Log.e("Supabase", "Sync failed, Worker will handle it later", e)
-                    // Worker logic (checking 'updated_at') will pick this up later!
+                    try {
+                        supabase.from("users").upsert(user)
+                        Log.d("Supabase", "Sync successful")
+                    } catch (e: Exception) {
+                        Log.e("Supabase", "Sync failed, Worker will handle it later", e)
+                    }
+                    Result.success(user)
+                } else {
+                    Result.failure(Exception("Invalid password"))
                 }
-                Result.success(updatedUser)
             } else {
-                Result.failure(Exception("Invalid password"))
+                Result.failure(Exception("User not found"))
             }
-        } else {
-            Result.failure(Exception("User not found"))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
+
+
+
+
+
+
+
 
 
     override suspend fun updateUserProfile(userId: Int, name: String, avatarUrl: String?): Result<User> {

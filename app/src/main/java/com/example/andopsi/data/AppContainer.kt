@@ -15,6 +15,8 @@ import io.github.jan.supabase.serializer.KotlinXSerializer
 interface AppContainer {
     val videoRepository: VideoRepository
     val userRepository: UserRepository
+    val usermetaRepository: UsermetaRepository
+    val audioExtractor: AudioExtractor // Add this
 }
 
 
@@ -24,6 +26,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
 
     // Configure Json to ignore unknown keys in responses
     private val json = Json { ignoreUnknownKeys = true }
+
 
     private val retrofit1: Retrofit = Retrofit.Builder()
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
@@ -45,8 +48,8 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
 
 
     private val supabase = createSupabaseClient(
-        supabaseUrl = "",
-        supabaseKey = "" // Found in Supabase Dashboard -> Settings -> API
+        supabaseUrl = "https://luabaqioqdhasfmqfudb.supabase.co",
+        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1YWJhcWlvcWRoYXNmbXFmdWRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTM2OTI0NywiZXhwIjoyMDgwOTQ1MjQ3fQ.YwJpF7h6GOzmdW8sH7R2kHtjTgOI3BCN4fKZUG61NBo" // Found in Supabase Dashboard -> Settings -> API
     ) {
         install(Postgrest) // Enable Database module
 
@@ -58,9 +61,14 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
     override val userRepository: UserRepository by lazy {
         UserRepositoryImplementation(database.userDao(), supabase)
     }
+    override val usermetaRepository: UsermetaRepository by lazy {
+        OfflineUsermetaRepository(database.usermetaDao(), supabase)
+    }
     //... Database setup ...
 
-
+    override val audioExtractor: AudioExtractor by lazy {
+        AndroidAudioExtractor()
+    }
     /*private val transcriptRetrofitService: com.example.andopsi.network.TranscriptApiService by lazy {
         retrofit2.create(com.example.andopsi.network.TranscriptApiService::class.java)
     }*/

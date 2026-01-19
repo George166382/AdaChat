@@ -16,15 +16,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.intellij.lang.annotations.Language
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginSubmit: (String, String) -> Unit, // email, pass
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit, // <--- 1. ADD THIS CALLBACK
+    onLoginSubmit: (String, String) -> Unit,
     onBackClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val languages = mapOf(
+        "en" to "English",
+        "ro" to "Romanian"
+    )
+
+    var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -43,7 +53,11 @@ fun LoginScreen(
         containerColor = Color(0xFFA6E0FF)
     ) { p ->
         Column(
-            modifier = Modifier.padding(p).fillMaxSize().padding(16.dp).background(Color(0xFFA6E0FF)),
+            modifier = Modifier
+                .padding(p)
+                .fillMaxSize()
+                .padding(16.dp)
+                .background(Color(0xFFA6E0FF)),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -57,12 +71,50 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(24.dp))
+
             Button(
                 onClick = { onLoginSubmit(email, password) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = email.isNotBlank() && password.isNotBlank()
             ) {
                 Text("Log In")
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // --- Language Selection Dropdown ---
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    // Display the full name (e.g., "English") based on the code (e.g., "en")
+                    value = languages[selectedLanguage] ?: selectedLanguage,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Select Language") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    languages.forEach { (code, name) ->
+                        DropdownMenuItem(
+                            text = { Text(text = name) },
+                            onClick = {
+                                // 2. CALL THE CALLBACK HERE
+                                onLanguageSelected(code)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
         }
     }
