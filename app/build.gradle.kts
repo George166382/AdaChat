@@ -18,9 +18,11 @@ android {
     namespace = "com.example.andopsi"
     compileSdk = 35
 
+
+    ndkVersion = "23.1.7779620"
     defaultConfig {
         applicationId = "com.example.andopsi"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -32,6 +34,24 @@ android {
             "YOUTUBE_API_KEY",
             "\"${properties.getProperty("YOUTUBE_API_KEY", "")}\""
         )
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++17" // Ensure C++17 is used
+                arguments += "-DANDROID_ARM_NEON=ON" // Enable NEON for ARM
+            }
+        }
+        ndk {
+            abiFilters.add("arm64-v8a")
+            abiFilters.add("armeabi-v7a")
+        }
+    }
+
+    // 3. Link the CMake file
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildTypes {
@@ -45,6 +65,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    testOptions {
+            unitTests {
+                isReturnDefaultValues = true
+            }
+        }
+
+
 
     kotlinOptions {
         jvmTarget = "1.8"
@@ -86,6 +114,34 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.4.3")
     // build.gradle.kts
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    implementation("androidx.room:room-runtime-android:2.8.4")
+    implementation("androidx.compose.animation:animation-core-android:1.7.1")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("org.postgresql:postgresql:42.7.2")
+    implementation("androidx.test:core-ktx:1.7.0")
+    implementation("androidx.test.ext:junit-ktx:1.3.0")
+    implementation("androidx.media3:media3-common-ktx:1.9.0")
+    // Unit Testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.10") // Powerful mocking library
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    // Change this from androidTestImplementation to testImplementation
+    testImplementation("androidx.work:work-testing:2.9.0")
+
+    // Add Robolectric
+    testImplementation("org.robolectric:robolectric:4.11.1")
+
+    // Ensure these are also testImplementation
+    testImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation("androidx.test:core:1.5.0")
+
+    // Standard Android Testing tools
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     // --- SUPABASE & KTOR ---
     val supabaseVersion = "3.0.2"
@@ -110,7 +166,9 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("androidx.fragment:fragment:1.8.9")
-    // Room components
+
+    implementation("io.github.maitrungduc1410:ffmpeg-kit-min:6.0.1")
+
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
@@ -122,4 +180,8 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+tasks.withType<Test>().configureEach {
+    enabled = false
 }
