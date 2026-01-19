@@ -1,0 +1,17 @@
+# IntelliJ / Android Studio
+.idea/
+*.iml
+
+# Android / Gradle
+.cxx/
+local.properties
+build/
+*.apk
+*.aab
+
+# Models / large binaries
+app/src/main/assets/models/*.bin
+
+# OS
+.DS_Store
+Thumbs.db
